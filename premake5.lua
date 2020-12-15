@@ -50,14 +50,17 @@ workspace "gameplay"
         optimize "On"
     filter {}
 
-    project "gameplay.core"
+    project "gameplay.filesystem"
+        kind "SharedLib"
+        location (workspace_dir.."/%{prj.name}")
+
+    project "gameplay.windowing"
         kind "SharedLib"
         location (workspace_dir.."/%{prj.name}")
 
     project "gameplay.editor"
         kind "ConsoleApp"
         location (workspace_dir.."/%{prj.name}")
-        --links { "gameplay.core" }
         files { "source/gameplay.editor/main.cpp" }
         vpaths { [''] = "source/gameplay.editor/*.*" }
         filter { "system:linux" }

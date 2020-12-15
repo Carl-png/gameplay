@@ -39,6 +39,15 @@ def clear_dir(dir_path):
     path = Path(dir_path)
     path.mkdir(parents=True)
 
+def copy_files(src_dir, dst_dir, match_exp):
+    clear_dir(dst_dir)
+    for filename in glob.glob(os.path.join(src_dir, match_exp)):
+        shutil.copy(filename, dst_dir)
+
+def remove_files(src_dir, match_exp):
+    for filename in glob.glob(os.path.join(src_dir, match_exp)):
+        os.remove(filename)
+
 def init_vsvars():
     vswhere_path = r"%ProgramFiles(x86)%/Microsoft Visual Studio/Installer/vswhere.exe"
     vswhere_path = os.path.expandvars(vswhere_path)
@@ -52,19 +61,11 @@ def init_vsvars():
         if(len(pair) >= 2):
             os.environ[pair[0]] = pair[1]
 
-def copy_files(src_dir, dst_dir, match_exp):
-    clear_dir(dst_dir)
-    for filename in glob.glob(os.path.join(src_dir, match_exp)):
-        shutil.copy(filename, dst_dir)
-
-def remove_files(src_dir, match_exp):
-    for filename in glob.glob(os.path.join(src_dir, match_exp)):
-        os.remove(filename)
-
+# building
+##############################################################################
 
 # arguments
 argc = len(sys.argv)
-
 generate_only = False
 arg0 = ""
 if argc > 1:
@@ -72,8 +73,7 @@ if argc > 1:
     if arg0 == "-g":
         generate_only = True
 
-
-# premake
+# generate/premake
 current_dir = os.getcwd()
 compiler_args = ""
 if sys.platform == "win32":
@@ -82,9 +82,8 @@ tools_dir = os.path.join(current_dir, TOOLS_FOLDER)
 premake_proc = subprocess.Popen(f"{tools_dir}/premake/premake5 --file=premake5.lua {compiler_args}", cwd=current_dir)
 premake_proc.wait()
 
-# build
+# compile/link
 if not generate_only:
-    # build/compile
     compiler_dir =  os.path.join(current_dir, COMPILER_FOLDER)
     if sys.platform == "win32":
         compiler_dir = os.path.join(compiler_dir, "vs2019")
@@ -96,11 +95,3 @@ if not generate_only:
         subprocess.run(build_cmd)
     else:
         pass
-        
-    # cleanup tmp
-    build_dir = os.path.join(current_dir, BUILD_FOLDER)
-    tmp_dir = os.path.join(build_dir, "tmp")
-    clear_dir(tmp_dir)
-    os.rmdir(tmp_dir)
-
-
