@@ -1,17 +1,14 @@
 _*/
-.lastrun
-.lastformat
-.lastverify
+/.vs
 .DS_Store
 .cache
 .vscode/ipch
-/.vs
 
 *.py[cod]
 *.swp
+*.suo
 *.diff
 *.patch
-
 *.ico
 *.bmp
 *.png
@@ -36,4 +33,3 @@ _*/
 *.usdz
 *.obj
 *.mat
-*.suo
