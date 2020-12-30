@@ -1,8 +1,9 @@
+#include <gameplay/App.h>
 #include <string>
+
 
 int main(int argc, char* argv[]) 
 { 
-	std::printf("Hello Gameplay");
-
-	return 0;
+	gameplay::App app(argc, argv);
+	return app.exec();
 }

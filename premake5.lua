@@ -4,6 +4,7 @@ workspace "gameplay"
     local target_dir = "_build/"..platform.."/%{cfg.buildcfg}"
     local workspace_dir = "_compiler/".._ACTION
     local deps_dir = "_deps"
+    local vulkan_sdk_dir = os.getenv("VULKAN_SDK")
 
     configurations { "debug", "release" }
     startproject "gameplay.editor"
@@ -16,7 +17,6 @@ workspace "gameplay"
     staticruntime "On"
     flags { "FatalCompileWarnings", "MultiProcessorCompile", "NoPCH", "UndefinedIdentifiers", "NoIncrementalLink" }
     cppdialect "C++14"
-    includedirs { deps_dir, "include" }
     filter { "system:windows" }
         platforms { "x86_64" }
         files { ".editorconfig" }
@@ -50,19 +50,47 @@ workspace "gameplay"
         optimize "On"
     filter {}
 
-    project "gameplay.filesystem"
-        kind "SharedLib"
+    project "gameplay"
+        kind "StaticLib"
         location (workspace_dir.."/%{prj.name}")
-
-    project "gameplay.windowing"
-        kind "SharedLib"
-        location (workspace_dir.."/%{prj.name}")
+        includedirs {
+                "include/gameplay", 
+                vulkan_sdk_dir.."/Include",
+                deps_dir.."/glfw/include",
+                deps_dir.."/freetype/include",
+                deps_dir.."/imgui"
+        }
+        files { "include/gameplay/*.h", 
+                "source/gameplay/*.cpp", 
+                 deps_dir.."/imgui/*.h", 
+                 deps_dir.."/imgui/imgui.cpp",
+                 deps_dir.."/imgui/imgui_demo.cpp",
+                 deps_dir.."/imgui/imgui_draw.cpp",
+                 deps_dir.."/imgui/imgui_tables.cpp",
+                 deps_dir.."/imgui/imgui_widgets.cpp",
+                 deps_dir.."/imgui/imgui_widgets.cpp",
+                 deps_dir.."/imgui/backends/imgui_impl_glfw.*",
+                 deps_dir.."/imgui/backends/imgui_impl_vulkan.*",
+                 deps_dir.."/imgui/misc/freetype/imgui_freetype.*",
+        }
+        vpaths 
+        {
+           ["imgui"] = deps_dir.."/imgui/**.*",
+           ["include"] = "include/gameplay/*.h",
+           ["source"] = "source/gameplay/*.cpp"
+        }
 
     project "gameplay.editor"
         kind "ConsoleApp"
         location (workspace_dir.."/%{prj.name}")
-        files { "source/gameplay.editor/main.cpp" }
-        vpaths { [''] = "source/gameplay.editor/*.*" }
+        includedirs("include")
+        files { "source/gameplay.editor/*.cpp" }
+        libdirs { 
+            target_dir,
+            deps_dir.."/freetype/bin/"..platform.."/%{cfg.buildcfg}",
+            deps_dir.."/glfw/bin/"..platform.."/%{cfg.buildcfg}"
+        }
+        links { "gameplay", "freetype", "glfw3" }
         filter { "system:linux" }
             buildoptions { "-pthread" }
             links { "dl", "pthread" }
